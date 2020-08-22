@@ -2,4 +2,4 @@ line:
   channelSecret: # There put your line bot channelSecret
   channelToken: # There put your line bot
 spreadsheets:
-  basePath: # spreadsheets id
+  spreadsheetId: # spreadsheets id

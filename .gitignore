@@ -54,7 +54,7 @@ Temporary Items
 # End of https://www.toptal.com/developers/gitignore/api/jetbrains,go,macos
 
 # Self ignore
-credentials.json
+token.json
 config.yaml
 .idea
 .idea/**

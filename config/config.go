@@ -19,7 +19,7 @@ type Line struct {
 }
 
 type Spreadsheets struct {
-	BasePath string
+	SpreadsheetId string
 }
 
 func New() (*Config, error) {
