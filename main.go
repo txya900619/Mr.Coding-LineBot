@@ -21,8 +21,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("Create linebot fail, %v", err)
 	}
-
 	http.HandleFunc("/callback", callbackHandler)
+	http.ListenAndServe(":1225", nil)
 }
 
 func callbackHandler(w http.ResponseWriter, r *http.Request) {
