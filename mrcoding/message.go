@@ -45,7 +45,7 @@ func getCompleteFormFlexContainer(chatroomID string) linebot.FlexContainer {
 					Action: &linebot.URIAction{
 						Label: "點我進入",
 						// Liff url
-						URI: "https://liff.line.me/" + chatroomID,
+						URI: "https://liff.line.me/1654852713-gR9j0RyE/" + chatroomID,
 					},
 				},
 			},

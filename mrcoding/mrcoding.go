@@ -93,7 +93,6 @@ func (bot *Bot) createChatroomAndGetID(userID string) string {
 		log.Fatalf("reqDo, err: %v", err)
 	}
 
-	fmt.Println(resp)
 	//Backend err
 	if !(resp.StatusCode == 200 || resp.StatusCode == 201) {
 		log.Fatal("statusCode err")
