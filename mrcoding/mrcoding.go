@@ -83,32 +83,32 @@ func (bot *Bot) createChatroomAndGetID(userID string) string {
 	reqBodyBytes := []byte(fmt.Sprintf(`{"owner":"%v"}`, userID))
 	req, err := http.NewRequest(http.MethodPost, "https://mrcoding.org/api/chatrooms", bytes.NewBuffer(reqBodyBytes))
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("newReq, err: %v", err)
 	}
 
 	req.Header.Set("Authorization", bot.backendToken)
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("reqDo, err: %v", err)
 	}
 
 	//Backend err
 	if resp.StatusCode != 200 && resp.StatusCode != 201 {
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("statusCode, err: %v", err)
 		}
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("readAll, err: %v", err)
 	}
 
 	result := make(map[string]interface{})
 	err = json.Unmarshal(body, &result)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("jsonUnmarshal, err: %v", err)
 	}
 
 	return result["_id"].(string)

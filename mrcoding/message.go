@@ -120,8 +120,9 @@ func getQuestionFlexContainer(questionID spreadsheets.ColumnID) linebot.FlexCont
 					Type:   linebot.FlexComponentTypeButton,
 					Height: linebot.FlexButtonHeightTypeSm,
 					Action: &linebot.PostbackAction{
-						Label: "略過此題",
-						Data:  "pass",
+						Label:       "略過此題",
+						Data:        "pass",
+						DisplayText: "略過",
 					},
 				},
 			},
