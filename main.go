@@ -49,7 +49,20 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 			case *linebot.TextMessage:
 				switch message.Text {
 				case "Mr.Coding 表單":
-					message, err := bot.QuestionStart(event.Source.UserID)
+					answerRowID, err := bot.FindAnswerRowID(event.Source.UserID)
+					if err != nil {
+						log.Fatal(err)
+					}
+					if answerRowID == 0 {
+						message, err := bot.QuestionStart(event.Source.UserID)
+						if err != nil {
+							log.Fatal(err)
+						}
+
+						bot.ReplyMessage(event.ReplyToken, message).Do()
+						return
+					}
+					message, err := bot.SaveAnswerAndGetNextMessage(message.Text, answerRowID, event.Source.UserID)
 					if err != nil {
 						log.Fatal(err)
 					}
