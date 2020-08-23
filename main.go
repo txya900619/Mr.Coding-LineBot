@@ -61,14 +61,15 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 
 						bot.ReplyMessage(event.ReplyToken, message).Do()
 						return
-					}
-					message, err := bot.SaveAnswerAndGetNextMessage(message.Text, answerRowID, event.Source.UserID)
-					if err != nil {
-						log.Fatal(err)
-					}
+					} else {
+						message, err := bot.SaveAnswerAndGetNextMessage(message.Text, answerRowID, event.Source.UserID)
+						if err != nil {
+							log.Fatal(err)
+						}
 
-					bot.ReplyMessage(event.ReplyToken, message).Do()
-					return
+						bot.ReplyMessage(event.ReplyToken, message).Do()
+						return
+					}
 				case "社團博覽會有獎徵答":
 					return
 				default:
