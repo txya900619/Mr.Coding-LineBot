@@ -22,6 +22,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Create linebot fail, %v", err)
 	}
+
 	http.HandleFunc("/callback", callbackHandler)
 	err = http.ListenAndServe(":1225", nil)
 	fmt.Println("serve on :1225")

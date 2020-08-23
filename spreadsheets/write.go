@@ -1,6 +1,7 @@
 package spreadsheets
 
 import (
+	"fmt"
 	"google.golang.org/api/sheets/v4"
 	"strconv"
 	"time"
@@ -9,7 +10,7 @@ import (
 func (ss *Spreadsheets) SaveValueToSpecificCell(value, ranges string) error {
 	_, err := ss.Values.Update(ss.SpreadsheetsID, ranges, &sheets.ValueRange{Values: [][]interface{}{{value}}}).ValueInputOption("RAW").Do()
 	if err != nil {
-		return err
+		return fmt.Errorf("saveValueToSpreadsheets fail, err: %v", err)
 	}
 	return nil
 }

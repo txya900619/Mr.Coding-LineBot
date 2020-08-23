@@ -93,20 +93,21 @@ func (bot *Bot) createChatroomAndGetID(userID string) string {
 		log.Fatalf("reqDo, err: %v", err)
 	}
 
+	fmt.Println(resp)
 	//Backend err
-	if resp.StatusCode != 200 && resp.StatusCode != 201 {
-		if err != nil {
-			log.Fatalf("statusCode, err: %v", err)
-		}
+	if !(resp.StatusCode == 200 || resp.StatusCode == 201) {
+		log.Fatal("statusCode err")
+
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
 	if err != nil {
 		log.Fatalf("readAll, err: %v", err)
 	}
 
 	result := make(map[string]interface{})
-	err = json.Unmarshal(body, &result)
+	err = json.Unmarshal([]byte(body), &result)
 	if err != nil {
 		log.Fatalf("jsonUnmarshal, err: %v", err)
 	}
