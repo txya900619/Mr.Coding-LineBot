@@ -3,6 +3,7 @@ package main
 import (
 	"Mr.Coding-LineBot/config"
 	"Mr.Coding-LineBot/mrcoding"
+	"fmt"
 	"github.com/line/line-bot-sdk-go/linebot"
 	"log"
 	"net/http"
@@ -22,7 +23,11 @@ func main() {
 		log.Fatalf("Create linebot fail, %v", err)
 	}
 	http.HandleFunc("/callback", callbackHandler)
-	http.ListenAndServe(":1225", nil)
+	err = http.ListenAndServe(":1225", nil)
+	fmt.Println("serve on :1225")
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func callbackHandler(w http.ResponseWriter, r *http.Request) {
