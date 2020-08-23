@@ -2,15 +2,15 @@ package main
 
 import (
 	"Mr.Coding-LineBot/config"
+	"Mr.Coding-LineBot/mrcoding"
 	"Mr.Coding-LineBot/spreadsheets"
 	"github.com/line/line-bot-sdk-go/linebot"
-	"google.golang.org/api/sheets/v4"
 	"log"
 	"net/http"
 )
 
-var bot *linebot.Client
-var googleService *sheets.Service
+var bot *mrcoding.Bot
+var ss *spreadsheets.Spreadsheets
 
 func main() {
 	// Get config at ./config.yaml
@@ -19,14 +19,19 @@ func main() {
 		log.Fatalf("Read config.yaml file fail, %v", err)
 	}
 
-	googleService, err = spreadsheets.New()
+	ss, err = spreadsheets.New(c.SpreadsheetId)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	bot, err = linebot.New(c.ChannelSecret, c.ChannelToken)
+	bot, err = mrcoding.New(c.ChannelSecret, c.ChannelToken, ss)
 	if err != nil {
 		log.Fatalf("Create linebot fail, %v", err)
+	}
+
+	err = bot.SaveValueToSpecificCell("cc", "A18:A18")
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	http.HandleFunc("/callback", callbackHandler)
@@ -48,9 +53,28 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 		case linebot.EventTypeMessage:
 			switch message := event.Message.(type) {
 			case *linebot.TextMessage:
-				if message.Text == "Mr.Coding 表單" {
+				switch message.Text {
+				case "Mr.Coding 表單":
 					return
+				case "社團博覽會有獎徵答":
+					return
+				default:
+					answerRowID, err := ss.FindAnswerRowID(event.Source.UserID)
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					if answerRowID != 0 {
+						question, err := bot.SaveAnswerAndGetNextQuestion(message.Text, answerRowID)
+						if err != nil {
+							log.Fatal(err)
+						}
+
+						bot.ReplyMessage(event.ReplyToken, question)
+						return
+					}
 				}
+
 			}
 		}
 	}
