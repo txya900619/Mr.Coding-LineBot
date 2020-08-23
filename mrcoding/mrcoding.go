@@ -1,22 +1,54 @@
 package mrcoding
 
 import (
+	"Mr.Coding-LineBot/config"
 	"Mr.Coding-LineBot/spreadsheets"
+	"bytes"
+	"encoding/json"
+	"fmt"
 	"github.com/line/line-bot-sdk-go/linebot"
-	"strconv"
+	"io/ioutil"
+	"log"
+	"net/http"
 )
 
 type Bot struct {
 	*linebot.Client
 	*spreadsheets.Spreadsheets
+	backendToken string
 }
 
-func New(channelSecret string, channelToken string, ss *spreadsheets.Spreadsheets, options ...linebot.ClientOption) (*Bot, error) {
-	lb, err := linebot.New(channelSecret, channelToken, options...)
-	return &Bot{lb, ss}, err
+func New(c *config.Config, options ...linebot.ClientOption) (*Bot, error) {
+	ss, err := spreadsheets.New(c.SpreadsheetId)
+	if err != nil {
+		return nil, err
+	}
+
+	lb, err := linebot.New(c.ChannelSecret, c.ChannelToken, options...)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Bot{lb, ss, c.CreateChatroomToken}, nil
 }
 
-func (bot *Bot) SaveAnswerAndGetNextQuestion(answer string, rowID int) (*linebot.FlexMessage, error) {
+func (bot *Bot) QuestionStart(userID string) (*linebot.FlexMessage, error) {
+	lastRowID, err := bot.GetLastRowID()
+	if err != nil {
+		return nil, err
+	}
+
+	err = bot.InsertTimestampAndUserID(userID, lastRowID)
+	if err != nil {
+		return nil, err
+	}
+
+	flexContainer := getQuestionFlexContainer(spreadsheets.QuestionEmail)
+	message := linebot.NewFlexMessage("Questions", flexContainer)
+	return message, nil
+}
+
+func (bot *Bot) SaveAnswerAndGetNextMessage(answer string, rowID int, userID string) (*linebot.FlexMessage, error) {
 	questionColID, err := bot.FindCurrentQuestionColID(rowID)
 	if err != nil {
 		return nil, err
@@ -29,92 +61,55 @@ func (bot *Bot) SaveAnswerAndGetNextQuestion(answer string, rowID int) (*linebot
 		return nil, err
 	}
 
-	return bot.GetQuestion(spreadsheets.ColumnID(rune(questionColID) + 1)), nil
-}
-
-func (bot *Bot) GetQuestion(questionID spreadsheets.ColumnID) *linebot.FlexMessage {
-	return linebot.NewFlexMessage("Questions", getFlexContainer(questionID))
-}
-
-func getFlexContainer(questionID spreadsheets.ColumnID) linebot.FlexContainer {
-	text := ""
-	instructions := ""
-	footerPassBtn := false
-	switch questionID {
-	case spreadsheets.QuestionEmail:
-		text = "輸入您的電子郵件地址"
-		instructions = "限定輸入一行"
-	case spreadsheets.QuestionName:
-		text = "輸入您的姓名"
-		instructions = "限定輸入一行"
-	case spreadsheets.QuestionStudentNo:
-		text = "輸入您的學號"
-		instructions = "限定輸入一行，例如：107000001"
-	case spreadsheets.QuestionDepartment:
-		text = "輸入您的系級"
-		instructions = "限定輸入一行，例如：電資一"
-	case spreadsheets.QuestionProgramming:
-		text = "輸入您的程式問題"
-		instructions = "允許多行輸入"
-	case spreadsheets.QuestionUploadFile:
-		text = "上傳程式碼檔案或程式截圖"
-		instructions = "直接上傳檔案，僅限文件及圖片檔"
-		footerPassBtn = true
-	case spreadsheets.QuestionNote:
-		text = "輸入其他您想說的"
-		instructions = "允許多行輸入"
-		footerPassBtn = true
-
-	}
-
-	container := &linebot.BubbleContainer{
-		Type: linebot.FlexContainerTypeBubble,
-		Body: &linebot.BoxComponent{
-			Type:   linebot.FlexComponentTypeBox,
-			Layout: linebot.FlexBoxLayoutTypeVertical,
-			Contents: []linebot.FlexComponent{
-				&linebot.TextComponent{
-					Type:   linebot.FlexComponentTypeText,
-					Text:   text,
-					Size:   linebot.FlexTextSizeTypeXl,
-					Weight: linebot.FlexTextWeightTypeBold,
-				},
-				&linebot.TextComponent{
-					Type:   linebot.FlexComponentTypeText,
-					Text:   instructions,
-					Size:   linebot.FlexTextSizeTypeSm,
-					Color:  "#808080",
-					Margin: linebot.FlexComponentMarginTypeMd,
-				},
-			},
-		},
-	}
-
-	if footerPassBtn {
-		container.Footer = &linebot.BoxComponent{
-			Type:   linebot.FlexComponentTypeBox,
-			Layout: linebot.FlexBoxLayoutTypeVertical,
-			Contents: []linebot.FlexComponent{
-				&linebot.ButtonComponent{
-					Type:   linebot.FlexComponentTypeButton,
-					Height: linebot.FlexButtonHeightTypeSm,
-					Action: &linebot.PostbackAction{
-						Label: "略過此題",
-						Data:  "pass",
-					},
-				},
-			},
+	// If is last question
+	if questionColID == spreadsheets.QuestionNote {
+		err = bot.DeleteUserID(rowID)
+		if err != nil {
+			return nil, err
 		}
-		container.Styles = &linebot.BubbleStyle{
-			Footer: &linebot.BlockStyle{Separator: true},
+		chatroomID := bot.createChatroomAndGetID(userID)
+		flexContainer := getCompleteFormFlexContainer(chatroomID)
+		message := linebot.NewFlexMessage("Final", flexContainer)
+		return message, nil
+	}
+
+	flexContainer := getQuestionFlexContainer(spreadsheets.ColumnID(rune(questionColID) + 1))
+	message := linebot.NewFlexMessage("Questions", flexContainer)
+	return message, nil
+}
+
+func (bot *Bot) createChatroomAndGetID(userID string) string {
+	client := &http.Client{}
+	reqBodyBytes := []byte(fmt.Sprintf(`{"owner":"%v"}`, userID))
+	req, err := http.NewRequest(http.MethodPost, "https://mrcoding.org/api/chatrooms", bytes.NewBuffer(reqBodyBytes))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	req.Header.Set("Authorization", bot.backendToken)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	//Backend err
+	if resp.StatusCode != 200 && resp.StatusCode != 201 {
+		if err != nil {
+			log.Fatal(err)
 		}
 	}
-	return container
-}
 
-func getRange(rowID int, colID spreadsheets.ColumnID) string {
-	colIdStr := colID.String()
-	rowIDStr := strconv.Itoa(rowID)
-	return colIdStr + rowIDStr + ":" + colIdStr + rowIDStr
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
 
+	result := make(map[string]interface{})
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return result["_id"].(string)
 }

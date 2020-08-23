@@ -10,6 +10,7 @@ type Config struct {
 type Constants struct {
 	Line
 	Spreadsheets
+	Backend
 }
 
 // Line message API's secret and token
@@ -20,6 +21,10 @@ type Line struct {
 
 type Spreadsheets struct {
 	SpreadsheetId string
+}
+
+type Backend struct {
+	CreateChatroomToken string
 }
 
 func New() (*Config, error) {

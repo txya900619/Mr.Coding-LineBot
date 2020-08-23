@@ -3,14 +3,12 @@ package main
 import (
 	"Mr.Coding-LineBot/config"
 	"Mr.Coding-LineBot/mrcoding"
-	"Mr.Coding-LineBot/spreadsheets"
 	"github.com/line/line-bot-sdk-go/linebot"
 	"log"
 	"net/http"
 )
 
 var bot *mrcoding.Bot
-var ss *spreadsheets.Spreadsheets
 
 func main() {
 	// Get config at ./config.yaml
@@ -19,19 +17,9 @@ func main() {
 		log.Fatalf("Read config.yaml file fail, %v", err)
 	}
 
-	ss, err = spreadsheets.New(c.SpreadsheetId)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	bot, err = mrcoding.New(c.ChannelSecret, c.ChannelToken, ss)
+	bot, err = mrcoding.New(c)
 	if err != nil {
 		log.Fatalf("Create linebot fail, %v", err)
-	}
-
-	err = bot.SaveValueToSpecificCell("cc", "A18:A18")
-	if err != nil {
-		log.Fatal(err)
 	}
 
 	http.HandleFunc("/callback", callbackHandler)
@@ -55,26 +43,48 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 			case *linebot.TextMessage:
 				switch message.Text {
 				case "Mr.Coding 表單":
+					message, err := bot.QuestionStart(event.Source.UserID)
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					bot.ReplyMessage(event.ReplyToken, message).Do()
 					return
 				case "社團博覽會有獎徵答":
 					return
 				default:
-					answerRowID, err := ss.FindAnswerRowID(event.Source.UserID)
+					answerRowID, err := bot.FindAnswerRowID(event.Source.UserID)
 					if err != nil {
 						log.Fatal(err)
 					}
 
 					if answerRowID != 0 {
-						question, err := bot.SaveAnswerAndGetNextQuestion(message.Text, answerRowID)
+						message, err := bot.SaveAnswerAndGetNextMessage(message.Text, answerRowID, event.Source.UserID)
 						if err != nil {
 							log.Fatal(err)
 						}
 
-						bot.ReplyMessage(event.ReplyToken, question)
+						bot.ReplyMessage(event.ReplyToken, message).Do()
 						return
 					}
 				}
+			}
+		case linebot.EventTypePostback:
+			switch event.Postback.Data {
+			case "pass":
+				answerRowID, err := bot.FindAnswerRowID(event.Source.UserID)
+				if err != nil {
+					log.Fatal(err)
+				}
+				if answerRowID != 0 {
+					message, err := bot.SaveAnswerAndGetNextMessage("NULL", answerRowID, event.Source.UserID)
+					if err != nil {
+						log.Fatal(err)
+					}
 
+					bot.ReplyMessage(event.ReplyToken, message).Do()
+					return
+				}
 			}
 		}
 	}
