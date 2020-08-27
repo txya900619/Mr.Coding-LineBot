@@ -27,7 +27,7 @@ type Question struct {
 }
 
 func New(client *linebot.Client) *Bot {
-	rawByte, err := ioutil.ReadFile("Questions.json")
+	rawByte, err := ioutil.ReadFile("questions.json")
 	if err != nil {
 		log.Fatalf("read Questions.json fail, err: %v", err)
 	}
