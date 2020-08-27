@@ -14,7 +14,7 @@ import (
 
 type Bot struct {
 	*linebot.Client
-	*spreadsheets.Spreadsheets
+	Spreadsheets *spreadsheets.Spreadsheets
 	backendToken string
 }
 
@@ -33,12 +33,12 @@ func New(c *config.Config, options ...linebot.ClientOption) (*Bot, error) {
 }
 
 func (bot *Bot) QuestionStart(userID string) (*linebot.FlexMessage, error) {
-	lastRowID, err := bot.GetLastRowID()
+	lastRowID, err := bot.Spreadsheets.GetLastRowID()
 	if err != nil {
 		return nil, err
 	}
 
-	err = bot.InsertTimestampAndUserID(userID, lastRowID)
+	err = bot.Spreadsheets.InsertTimestampAndUserID(userID, lastRowID)
 	if err != nil {
 		return nil, err
 	}
@@ -49,21 +49,21 @@ func (bot *Bot) QuestionStart(userID string) (*linebot.FlexMessage, error) {
 }
 
 func (bot *Bot) SaveAnswerAndGetNextMessage(answer string, rowID int, userID string) (*linebot.FlexMessage, error) {
-	questionColID, err := bot.FindCurrentQuestionColID(rowID)
+	questionColID, err := bot.Spreadsheets.FindCurrentQuestionColID(rowID)
 	if err != nil {
 		return nil, err
 	}
 
 	ranges := getRange(rowID, questionColID)
 
-	err = bot.SaveValueToSpecificCell(answer, ranges)
+	err = bot.Spreadsheets.SaveValueToSpecificCell(answer, ranges)
 	if err != nil {
 		return nil, err
 	}
 
 	// If is last question
 	if questionColID == spreadsheets.QuestionNote {
-		err = bot.DeleteUserID(rowID)
+		err = bot.Spreadsheets.DeleteUserID(rowID)
 		if err != nil {
 			return nil, err
 		}

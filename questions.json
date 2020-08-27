@@ -1,0 +1,222 @@
+[
+  {
+    "question": "下列哪一個不是程式語言？",
+    "options" : [
+      "1. html",
+      "2. JavaScript",
+      "3. C ++",
+      "4. Java"
+    ],
+    "answer": "1",
+    "reason": "HTML語言不具備很強的邏輯性。\n基於此，很多程式設計師都不承認HTML是一門程式語言。\n不像其他語言，例如Java，C++，Python等流行語言，這些語言都帶有很強的邏輯和流程控制功能。"
+  },
+  {
+    "question": "C 語言的前身是什麼語言？",
+    "options" : [
+      "1. B 語言",
+      "2. Python",
+      "3. Visual Basic",
+      "4. Kotlin"
+    ],
+    "answer": "1",
+    "reason": "B 語言是 C 語言的前身。\nB 语言是貝爾實驗室開發的一種通用的程式語言，它是 1969 年前後由美國貝爾實驗室的電腦科學家 Ken Thompson 在 Dennis Ritchie 的支持下設計出来。"
+  },
+  {
+    "question": "下列哪一個平台被稱為工程師的臉書？",
+    "options" : [
+      "1. Github",
+      "2. Pornhub",
+      "3. EngineerHub",
+      "4. CodeHub"
+    ],
+    "answer": "1",
+    "reason": "GitHub 是通過 Git 進行版本控制的軟體源代碼托管的平台，能協助開發者保留所有程式編改紀錄，確保工作同仁從開發軟體工程的誕生到完結所編輯的檔案程式都能同步"
+  },
+  {
+    "question": "第一位程式設計師是？",
+    "options" : [
+      "1. Ada Byron(女性)",
+      "2. Steven Paul Jobs(男性)",
+      "3. Bill Gates(男性)",
+      "4. Grace Hopper(女性)"
+    ],
+    "answer": "1",
+    "reason": "詳細說明用查爾斯·巴貝奇計算機計算伯努利數的方法，被認為是世界上第一個計算機程序。\n因此，愛達也被認為是世界上第一位程式設計師。"
+  },
+  {
+    "question": "世界上最大的搜尋引擎是下列哪一個？",
+    "options" : [
+      "1. Safari",
+      "2. Google",
+      "3. Bing",
+      "4. Baidu"
+    ],
+    "answer": "2",
+    "reason": "Google 的市場份額為 91.84 %，依舊是目前用戶規模最大的搜尋引擎。"
+  },
+  {
+    "question": "6",
+    "options" : [
+      "1.",
+      "2.",
+      "3.",
+      "4."
+    ],
+    "answer": "1",
+    "reason": "reason"
+  },
+  {
+    "question": "7",
+    "options" : [
+      "1.",
+      "2.",
+      "3.",
+      "4."
+    ],
+    "answer": "1",
+    "reason": "reason"
+  },
+  {
+    "question": "8",
+    "options" : [
+      "1.",
+      "2.",
+      "3.",
+      "4."
+    ],
+    "answer": "1",
+    "reason": "reason"
+  },
+  {
+    "question": "9",
+    "options" : [
+      "1.",
+      "2.",
+      "3.",
+      "4."
+    ],
+    "answer": "1",
+    "reason": "reason"
+  },
+  {
+    "question": "10",
+    "options" : [
+      "1.",
+      "2.",
+      "3.",
+      "4."
+    ],
+    "answer": "1",
+    "reason": "reason"
+  },
+  {
+    "question": "11",
+    "options" : [
+      "1.",
+      "2.",
+      "3.",
+      "4."
+    ],
+    "answer": "1",
+    "reason": "reason"
+  },
+  {
+    "question": "12",
+    "options" : [
+      "1.",
+      "2.",
+      "3.",
+      "4."
+    ],
+    "answer": "1",
+    "reason": "reason"
+  },
+  {
+    "question": "13",
+    "options" : [
+      "1.",
+      "2.",
+      "3.",
+      "4."
+    ],
+    "answer": "1",
+    "reason": "reason"
+  },
+  {
+    "question": "14",
+    "options" : [
+      "1.",
+      "2.",
+      "3.",
+      "4."
+    ],
+    "answer": "1",
+    "reason": "reason"
+  },
+  {
+    "question": "15",
+    "options" : [
+      "1.",
+      "2.",
+      "3.",
+      "4."
+    ],
+    "answer": "1",
+    "reason": "reason"
+  },
+  {
+    "question": "16",
+    "options" : [
+      "1.",
+      "2.",
+      "3.",
+      "4."
+    ],
+    "answer": "1",
+    "reason": "reason"
+  },
+  {
+    "question": "17",
+    "options" : [
+      "1.",
+      "2.",
+      "3.",
+      "4."
+    ],
+    "answer": "1",
+    "reason": "reason"
+  },
+  {
+    "question": "18",
+    "options" : [
+      "1.",
+      "2.",
+      "3.",
+      "4."
+    ],
+    "answer": "1",
+    "reason": "reason"
+  },
+  {
+    "question": "19",
+    "options" : [
+      "1.",
+      "2.",
+      "3.",
+      "4."
+    ],
+    "answer": "1",
+    "reason": "reason"
+  },
+  {
+    "question": "20",
+    "options" : [
+      "1.",
+      "2.",
+      "3.",
+      "4."
+    ],
+    "answer": "1",
+    "reason": "reason"
+  }
+]
