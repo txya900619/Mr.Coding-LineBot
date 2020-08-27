@@ -71,8 +71,8 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 							return
 						} else {
 							nextQuestionID := player.RandomQuestionID()
-							player.AnsweredList = append(player.AnsweredList, nextQuestionID)
 							messages = append(messages, player.GetQuestionMessageByID(nextQuestionID))
+							player.AnsweredList = append(player.AnsweredList, nextQuestionID)
 
 							entroyBot.ReplyMessage(event.ReplyToken, messages...).Do()
 							return
@@ -123,9 +123,10 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 
 						// How many Question in questions.json
 						questionID := player.RandomQuestionID()
+						messages := player.GetQuestionMessageByID(questionID)
 						player.AnsweredList = append(player.AnsweredList, questionID)
 
-						entroyBot.ReplyMessage(event.ReplyToken, entroy.StartMessage(), player.GetQuestionMessageByID(questionID)).Do()
+						entroyBot.ReplyMessage(event.ReplyToken, entroy.StartMessage(), messages).Do()
 						return
 					default:
 						answerRowID, err := bot.Spreadsheets.FindAnswerRowID(event.Source.UserID)
