@@ -99,6 +99,7 @@ func getQuestionFlexContainer(questionID spreadsheets.ColumnID) linebot.FlexCont
 					Text:   text,
 					Size:   linebot.FlexTextSizeTypeXl,
 					Weight: linebot.FlexTextWeightTypeBold,
+					Wrap:   true,
 				},
 				&linebot.TextComponent{
 					Type:   linebot.FlexComponentTypeText,
