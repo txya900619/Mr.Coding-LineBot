@@ -77,6 +77,9 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 							entroyBot.ReplyMessage(event.ReplyToken, messages...).Do()
 							return
 						}
+					} else if message.Text == "社團博覽會有獎徵答" {
+						entroyBot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(`不要再輸入 社團博覽會有獎徵答 拉 > <`)).Do()
+						return
 					} else {
 						entroyBot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("要輸入 1 到 4 歐")).Do()
 						return
