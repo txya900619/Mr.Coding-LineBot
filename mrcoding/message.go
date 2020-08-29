@@ -133,3 +133,19 @@ func getQuestionFlexContainer(questionID spreadsheets.ColumnID) linebot.FlexCont
 	}
 	return container
 }
+
+func getEmailErrorFlexContainer() linebot.FlexContainer {
+	return &linebot.BubbleContainer{
+		Type: linebot.FlexContainerTypeBubble,
+		Body: &linebot.BoxComponent{
+			Type:   linebot.FlexComponentTypeBox,
+			Layout: linebot.FlexBoxLayoutTypeVertical,
+			Contents: []linebot.FlexComponent{
+				&linebot.TextComponent{
+					Type: linebot.FlexComponentTypeText,
+					Text: "請輸入合法格式的 email",
+				},
+			},
+		},
+	}
+}

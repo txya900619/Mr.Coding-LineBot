@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/go-playground/validator/v10"
 	"github.com/line/line-bot-sdk-go/linebot"
 	"io/ioutil"
 	"log"
@@ -59,6 +60,14 @@ func (bot *Bot) SaveAnswerAndGetNextMessage(answer string, rowID int, userID str
 	err = bot.Spreadsheets.SaveValueToSpecificCell(answer, ranges)
 	if err != nil {
 		return nil, err
+	}
+
+	if questionColID == spreadsheets.QuestionEmail {
+		v := validator.New()
+		err := v.Var(answer, "email")
+		if err != nil {
+			return linebot.NewFlexMessage("email input error", getEmailErrorFlexContainer()), nil
+		}
 	}
 
 	// If is last question
