@@ -55,19 +55,19 @@ func (bot *Bot) SaveAnswerAndGetNextMessage(answer string, rowID int, userID str
 		return nil, err
 	}
 
-	ranges := getRange(rowID, questionColID)
-
-	err = bot.Spreadsheets.SaveValueToSpecificCell(answer, ranges)
-	if err != nil {
-		return nil, err
-	}
-
 	if questionColID == spreadsheets.QuestionEmail {
 		v := validator.New()
 		err := v.Var(answer, "email")
 		if err != nil {
 			return linebot.NewFlexMessage("email input error", getEmailErrorFlexContainer()), nil
 		}
+	}
+
+	ranges := getRange(rowID, questionColID)
+
+	err = bot.Spreadsheets.SaveValueToSpecificCell(answer, ranges)
+	if err != nil {
+		return nil, err
 	}
 
 	// If is last question
