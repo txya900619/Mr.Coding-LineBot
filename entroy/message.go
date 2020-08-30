@@ -2,8 +2,9 @@ package entroy
 
 import (
 	"fmt"
-	"github.com/line/line-bot-sdk-go/linebot"
 	"strconv"
+
+	"github.com/line/line-bot-sdk-go/linebot"
 )
 
 func StartMessage() *linebot.FlexMessage {
@@ -23,7 +24,7 @@ func StartMessage() *linebot.FlexMessage {
 				&linebot.TextComponent{
 					Type: linebot.FlexComponentTypeText,
 					Size: linebot.FlexTextSizeTypeSm,
-					Text: "在遊戲開始之前要告訴你/妳一些資訊",
+					Text: "在遊戲開始之前要告訴你一些資訊",
 				},
 			},
 		},
@@ -46,7 +47,7 @@ func StartMessage() *linebot.FlexMessage {
 				},
 				&linebot.TextComponent{
 					Type: linebot.FlexComponentTypeText,
-					Text: "期待你/妳的參與歐～～～",
+					Text: "期待你的參與歐～～～",
 				},
 			},
 		},
@@ -180,7 +181,7 @@ func (p *Player) FinalMessage() *linebot.FlexMessage {
 			Contents: []linebot.FlexComponent{
 				&linebot.TextComponent{
 					Type: linebot.FlexComponentTypeText,
-					Text: fmt.Sprintf("你/妳答對了 %v 題!!!", p.Score),
+					Text: fmt.Sprintf("你答對了 %v 題!!!", p.Score),
 					Size: linebot.FlexTextSizeTypeXxl,
 				},
 			},
@@ -191,7 +192,7 @@ func (p *Player) FinalMessage() *linebot.FlexMessage {
 			Contents: []linebot.FlexComponent{
 				&linebot.TextComponent{
 					Type: linebot.FlexComponentTypeText,
-					Text: "遊戲結束摟～～～",
+					Text: "遊戲結束拉 ～～～",
 				},
 				&linebot.TextComponent{
 					Type: linebot.FlexComponentTypeText,
