@@ -154,7 +154,8 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 							bot.ReplyMessage(event.ReplyToken, message).Do()
 							return
 						} else {
-							bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("點開選單選擇功能，\n或輸入 /help 選擇想使用的功能。"))
+							bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("點開選單選擇功能，\n或輸入 /help 選擇想使用的功能。")).Do()
+							return
 						}
 					}
 				}
