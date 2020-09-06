@@ -236,7 +236,7 @@ func (p *Player) FinalMessage() *linebot.FlexMessage {
 					Type: linebot.FlexComponentTypeButton,
 					Action: &linebot.URIAction{
 						Label: "填寫表單",
-						URI:   "http://linecorp.com/",
+						URI:   "https://docs.google.com/forms/d/e/1FAIpQLSe3kKqpKEv4BP3RmNN10JMjUft1cgccccoTgGI8kz6SMGx5dQ/viewform",
 					},
 				},
 			},
