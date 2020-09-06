@@ -134,12 +134,7 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 						}
 						entroyBot.PlayerList[event.Source.UserID] = player
 
-						// How many Question in questions.json
-						questionID := player.RandomQuestionID()
-						messages := player.GetQuestionMessageByID(questionID)
-						player.AnsweredList = append(player.AnsweredList, questionID)
-
-						entroyBot.ReplyMessage(event.ReplyToken, entroy.StartMessage(), messages).Do()
+						entroyBot.ReplyMessage(event.ReplyToken, entroy.StartMessage()).Do()
 						return
 					default:
 						answerRowID, err := bot.Spreadsheets.FindAnswerRowID(event.Source.UserID)
