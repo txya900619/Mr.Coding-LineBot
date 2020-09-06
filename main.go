@@ -136,6 +136,9 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 
 						entroyBot.ReplyMessage(event.ReplyToken, entroy.StartMessage()).Do()
 						return
+					case "/help":
+						bot.ReplyMessage(event.ReplyToken, mrcoding.HelpMessage()).Do()
+						return
 					default:
 						answerRowID, err := bot.Spreadsheets.FindAnswerRowID(event.Source.UserID)
 						if err != nil {
@@ -150,6 +153,8 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 
 							bot.ReplyMessage(event.ReplyToken, message).Do()
 							return
+						} else {
+							bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("點開選單選擇功能，\n或輸入 /help 選擇想使用的功能。"))
 						}
 					}
 				}

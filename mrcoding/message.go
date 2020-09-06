@@ -150,3 +150,31 @@ func getEmailErrorFlexContainer() linebot.FlexContainer {
 		},
 	}
 }
+
+func HelpMessage() *linebot.FlexMessage {
+	flexContainer := &linebot.BubbleContainer{
+		Type: linebot.FlexContainerTypeBubble,
+		Body: &linebot.BoxComponent{
+			Type:   linebot.FlexComponentTypeBox,
+			Layout: linebot.FlexBoxLayoutTypeVertical,
+			Contents: []linebot.FlexComponent{
+				&linebot.ButtonComponent{
+					Type: linebot.FlexComponentTypeButton,
+					Action: &linebot.MessageAction{
+						Label: "點我填寫 Mr.Coding 表單",
+						Text:  "Mr.Coding 表單",
+					},
+				},
+				&linebot.ButtonComponent{
+					Type: linebot.FlexComponentTypeButton,
+					Action: &linebot.MessageAction{
+						Label: "點我遊玩社團博覽會有獎徵答",
+						Text:  "社團博覽會有獎徵答",
+					},
+				},
+			},
+		},
+	}
+
+	return linebot.NewFlexMessage("help", flexContainer)
+}
