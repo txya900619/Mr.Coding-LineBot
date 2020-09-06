@@ -55,28 +55,19 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 					if entroy.CheckAnswerText(message.Text) {
 						player := entroyBot.PlayerList[event.Source.UserID]
 
-						messages := make([]linebot.SendingMessage, 0)
 						currentQuestion := entroy.Questions[player.AnsweredList[len(player.AnsweredList)-1]]
-						messages = append(messages, currentQuestion.ReasonMessage(message.Text))
+
+						if len(player.AnsweredList) == 5 {
+							currentQuestion.Final = true
+						}
 
 						if message.Text == currentQuestion.Answer {
 							player.Score++
 						}
 
-						if len(player.AnsweredList) >= 5 {
-							messages = append(messages, player.FinalMessage())
-							delete(entroyBot.PlayerList, event.Source.UserID)
+						entroyBot.ReplyMessage(event.ReplyToken, currentQuestion.ReasonMessage(message.Text)).Do()
+						return
 
-							entroyBot.ReplyMessage(event.ReplyToken, messages...).Do()
-							return
-						} else {
-							nextQuestionID := player.RandomQuestionID()
-							messages = append(messages, player.GetQuestionMessageByID(nextQuestionID))
-							player.AnsweredList = append(player.AnsweredList, nextQuestionID)
-
-							entroyBot.ReplyMessage(event.ReplyToken, messages...).Do()
-							return
-						}
 					} else if message.Text == "社團博覽會有獎徵答" {
 						entroyBot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(`不要再輸入 社團博覽會有獎徵答 拉 > <`)).Do()
 						return
@@ -87,6 +78,25 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 				default:
 					entroyBot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("不要傳文字以外的訊息歐 ～～")).Do()
 					return
+				}
+			case linebot.EventTypePostback:
+				switch event.Postback.Data {
+				case "next":
+					player := entroyBot.PlayerList[event.Source.UserID]
+					if len(player.AnsweredList) >= 5 {
+						message := player.FinalMessage()
+						delete(entroyBot.PlayerList, event.Source.UserID)
+
+						entroyBot.ReplyMessage(event.ReplyToken, message).Do()
+						return
+					} else {
+						nextQuestionID := player.RandomQuestionID()
+						message := player.GetQuestionMessageByID(nextQuestionID)
+						player.AnsweredList = append(player.AnsweredList, nextQuestionID)
+
+						entroyBot.ReplyMessage(event.ReplyToken, message).Do()
+						return
+					}
 				}
 			}
 		} else {

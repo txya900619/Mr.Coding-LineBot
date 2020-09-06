@@ -24,6 +24,7 @@ type Question struct {
 	Options  []string `json:"options"`
 	Answer   string   `json:"answer"`
 	Reason   string   `json:"reason"`
+	Final    bool     `json:"-"`
 }
 
 func New(client *linebot.Client) *Bot {

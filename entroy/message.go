@@ -62,6 +62,14 @@ func StartMessage() *linebot.FlexMessage {
 						URI:   "https://docs.google.com/forms/d/1X1ZqMvUsA4cp4uPQKzH9iwc7dzNTEp2z3wjQzsv40gQ/viewform?edit_requested=true",
 					},
 				},
+				&linebot.ButtonComponent{
+					Type: linebot.FlexComponentTypeButton,
+					Action: &linebot.PostbackAction{
+						Label:       "開始答題",
+						Data:        "next",
+						DisplayText: "開始",
+					},
+				},
 			},
 		},
 	}
@@ -129,12 +137,18 @@ func (p *Player) GetQuestionMessageByID(questionID uint) *linebot.FlexMessage {
 }
 
 func (q *Question) ReasonMessage(answer string) *linebot.FlexMessage {
-	var title string
+	var title, buttonText string
 
 	if q.Answer == answer {
 		title = "答對拉 (つ´ω`)つ"
 	} else {
 		title = "答錯拉 QAQ 可惜了～～～"
+	}
+
+	if q.Final {
+		buttonText = "結束答題"
+	} else {
+		buttonText = "下一題"
 	}
 
 	flexContainer := &linebot.BubbleContainer{
@@ -164,6 +178,20 @@ func (q *Question) ReasonMessage(answer string) *linebot.FlexMessage {
 					Type: linebot.FlexComponentTypeText,
 					Text: q.Reason,
 					Wrap: true,
+				},
+			},
+		},
+		Footer: &linebot.BoxComponent{
+			Type:   linebot.FlexComponentTypeBox,
+			Layout: linebot.FlexBoxLayoutTypeVertical,
+			Contents: []linebot.FlexComponent{
+				&linebot.ButtonComponent{
+					Type: linebot.FlexComponentTypeButton,
+					Action: &linebot.PostbackAction{
+						Label:       buttonText,
+						Data:        "next",
+						DisplayText: buttonText,
+					},
 				},
 			},
 		},
