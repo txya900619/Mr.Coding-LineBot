@@ -2,6 +2,7 @@ package mrcoding
 
 import (
 	"Mr.Coding-LineBot/config"
+	"Mr.Coding-LineBot/drive"
 	"Mr.Coding-LineBot/spreadsheets"
 	"bytes"
 	"encoding/json"
@@ -16,6 +17,7 @@ import (
 type Bot struct {
 	*linebot.Client
 	Spreadsheets *spreadsheets.Spreadsheets
+	Drive        *drive.Drive
 	backendToken string
 }
 
@@ -25,12 +27,14 @@ func New(c *config.Config, options ...linebot.ClientOption) (*Bot, error) {
 		return nil, err
 	}
 
+	drive, err := drive.New(c.FolderId)
+
 	lb, err := linebot.New(c.ChannelSecret, c.ChannelToken, options...)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Bot{lb, ss, c.CreateChatroomToken}, nil
+	return &Bot{lb, ss, drive, c.CreateChatroomToken}, nil
 }
 
 func (bot *Bot) QuestionStart(userID string) (*linebot.FlexMessage, error) {

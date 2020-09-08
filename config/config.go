@@ -11,6 +11,7 @@ type Constants struct {
 	Line
 	Spreadsheets
 	Backend
+	Drive
 }
 
 // Line message API's secret and token
@@ -21,6 +22,10 @@ type Line struct {
 
 type Spreadsheets struct {
 	SpreadsheetId string
+}
+
+type Drive struct {
+	FolderId string
 }
 
 type Backend struct {

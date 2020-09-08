@@ -4,6 +4,7 @@ import (
 	"Mr.Coding-LineBot/config"
 	"Mr.Coding-LineBot/entroy"
 	"Mr.Coding-LineBot/mrcoding"
+	"Mr.Coding-LineBot/spreadsheets"
 	"fmt"
 	"github.com/line/line-bot-sdk-go/linebot"
 	"log"
@@ -158,6 +159,37 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 							return
 						}
 					}
+				case *linebot.ImageMessage:
+					answerRowID, err := bot.Spreadsheets.FindAnswerRowID(event.Source.UserID)
+					if err != nil {
+						log.Fatal(err)
+					}
+					questionColID, err := bot.Spreadsheets.FindCurrentQuestionColID(answerRowID)
+					if err != nil {
+						log.Fatal(err)
+					}
+					if questionColID == spreadsheets.QuestionUploadFile {
+						content, err := bot.GetMessageContent(message.ID).Do()
+						if err != nil {
+							log.Fatal(err)
+						}
+						fileUrl, err := bot.Drive.UploadNewFile(content.Content, event.Timestamp.String()+"-"+event.Source.UserID)
+						if err != nil {
+							log.Fatal(err)
+						}
+
+						message, err := bot.SaveAnswerAndGetNextMessage(fileUrl, answerRowID, event.Source.UserID)
+						if err != nil {
+							log.Fatal(err)
+						}
+
+						bot.ReplyMessage(event.ReplyToken, message).Do()
+						return
+					} else {
+						bot.ReplyMessage(event.ReplyToken, linebot.NewFlexMessage("error", mrcoding.GetTypeErrorFlexContainer())).Do()
+						return
+					}
+
 				}
 			case linebot.EventTypePostback:
 				switch event.Postback.Data {

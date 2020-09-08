@@ -3,5 +3,7 @@ line:
   channelToken: # There put your line bot
 spreadsheets:
   spreadsheetId: # Spreadsheets id
+drive:
+  folderId: # folder id
 backend:
   createChatroomToken: # This Token will provide by backend

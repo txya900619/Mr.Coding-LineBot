@@ -77,8 +77,8 @@ func getQuestionFlexContainer(questionID spreadsheets.ColumnID) linebot.FlexCont
 		text = "輸入您的程式問題"
 		instructions = "允許多行輸入"
 	case spreadsheets.QuestionUploadFile:
-		text = "上傳程式碼檔案或程式截圖"
-		instructions = "直接上傳檔案，僅限文件及圖片檔"
+		text = "上傳程式截圖或程式碼網址"
+		instructions = "直接上傳圖片檔，僅限圖片檔"
 		footerPassBtn = true
 	case spreadsheets.QuestionNote:
 		text = "輸入其他您想說的"
@@ -177,4 +177,20 @@ func HelpMessage() *linebot.FlexMessage {
 	}
 
 	return linebot.NewFlexMessage("help", flexContainer)
+}
+
+func GetTypeErrorFlexContainer() linebot.FlexContainer {
+	return &linebot.BubbleContainer{
+		Type: linebot.FlexContainerTypeBubble,
+		Body: &linebot.BoxComponent{
+			Type:   linebot.FlexComponentTypeBox,
+			Layout: linebot.FlexBoxLayoutTypeVertical,
+			Contents: []linebot.FlexComponent{
+				&linebot.TextComponent{
+					Type: linebot.FlexComponentTypeText,
+					Text: "請不要輸入文字以外的訊息",
+				},
+			},
+		},
+	}
 }
