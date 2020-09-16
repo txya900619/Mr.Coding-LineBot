@@ -194,3 +194,19 @@ func GetTypeErrorFlexContainer() linebot.FlexContainer {
 		},
 	}
 }
+
+func GetWorkingFlexContainer() linebot.FlexContainer {
+	return &linebot.BubbleContainer{
+		Type: linebot.FlexContainerTypeBubble,
+		Body: &linebot.BoxComponent{
+			Type:   linebot.FlexComponentTypeBox,
+			Layout: linebot.FlexBoxLayoutTypeVertical,
+			Contents: []linebot.FlexComponent{
+				&linebot.TextComponent{
+					Type: linebot.FlexComponentTypeText,
+					Text: "目前正在維護中，預計 10 月重啟服務",
+				},
+			},
+		},
+	}
+}

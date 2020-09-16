@@ -93,7 +93,7 @@ func (bot *Bot) SaveAnswerAndGetNextMessage(answer string, rowID int, userID str
 
 func (bot *Bot) createChatroomAndGetID(userID string) string {
 	client := &http.Client{}
-	reqBodyBytes := []byte(fmt.Sprintf(`{"owner":"%v"}`, userID))
+	reqBodyBytes := []byte(fmt.Sprintf(`{"liffUserID":"%s"}`, userID))
 	req, err := http.NewRequest(http.MethodPost, "https://mrcoding.org/api/chatrooms", bytes.NewBuffer(reqBodyBytes))
 	if err != nil {
 		log.Fatalf("newReq, err: %v", err)

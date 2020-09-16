@@ -107,6 +107,8 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 				case *linebot.TextMessage:
 					switch message.Text {
 					case "Mr.Coding 表單":
+						//bot.ReplyMessage(event.ReplyToken, linebot.NewFlexMessage("working", mrcoding.GetWorkingFlexContainer())).Do()
+						//return
 						answerRowID, err := bot.Spreadsheets.FindAnswerRowID(event.Source.UserID)
 						if err != nil {
 							log.Fatal(err)
