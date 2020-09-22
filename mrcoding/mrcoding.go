@@ -72,7 +72,7 @@ func (bot *Bot) SaveAnswerAndGetNextMessage(answer string, currentPosition strin
 	// }
 
 	questionColID := spreadsheets.ColumnID([]rune(currentPosition)[0])
-	rowID := string([]rune(currentPosition)[0])
+	rowID := string([]rune(currentPosition)[1:])
 
 	if questionColID == spreadsheets.QuestionEmail {
 		v := validator.New()
