@@ -3,16 +3,17 @@ package spreadsheets
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
+
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
-	"io/ioutil"
 )
 
 type ColumnID rune
 
 const (
-	TimeStamp ColumnID = iota
+	TimeStamp ColumnID = iota + 'A'
 	QuestionEmail
 	QuestionName
 	QuestionStudentNo

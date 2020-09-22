@@ -2,9 +2,10 @@ package spreadsheets
 
 import (
 	"fmt"
-	"google.golang.org/api/sheets/v4"
 	"strconv"
 	"time"
+
+	"google.golang.org/api/sheets/v4"
 )
 
 func (ss *Spreadsheets) SaveValueToSpecificCell(value, ranges string) error {
@@ -16,9 +17,8 @@ func (ss *Spreadsheets) SaveValueToSpecificCell(value, ranges string) error {
 }
 
 // Complete question
-func (ss *Spreadsheets) DeleteUserID(rowID int) error {
-	rowIdStr := strconv.Itoa(rowID)
-	ranges := "I" + rowIdStr + ":" + "I" + rowIdStr
+func (ss *Spreadsheets) DeleteUserID(rowID string) error {
+	ranges := "I" + rowID + ":" + "I" + rowID
 	err := ss.SaveValueToSpecificCell("Complete", ranges)
 	return err
 }

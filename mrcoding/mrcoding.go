@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 
 	"Mr.Coding-LineBot/config"
 	"Mr.Coding-LineBot/drive"
@@ -21,7 +22,7 @@ type Bot struct {
 	Spreadsheets *spreadsheets.Spreadsheets
 	Drive        *drive.Drive
 	backendToken string
-	redis        *redis.Conn
+	Redis        redis.Conn
 }
 
 func New(c *config.Config, options ...linebot.ClientOption) (*Bot, error) {
@@ -43,7 +44,7 @@ func New(c *config.Config, options ...linebot.ClientOption) (*Bot, error) {
 		return nil, err
 	}
 
-	return &Bot{lb, ss, drive, c.CreateChatroomToken, &conn}, nil
+	return &Bot{lb, ss, drive, c.CreateChatroomToken, conn}, nil
 }
 
 func (bot *Bot) QuestionStart(userID string) (*linebot.FlexMessage, error) {
@@ -57,16 +58,21 @@ func (bot *Bot) QuestionStart(userID string) (*linebot.FlexMessage, error) {
 		return nil, err
 	}
 
+	bot.Redis.Do("SET", userID, "B"+strconv.Itoa(lastRowID))
+
 	flexContainer := getQuestionFlexContainer(spreadsheets.QuestionEmail)
 	message := linebot.NewFlexMessage("Questions", flexContainer)
 	return message, nil
 }
 
-func (bot *Bot) SaveAnswerAndGetNextMessage(answer string, rowID int, userID string) (*linebot.FlexMessage, error) {
-	questionColID, err := bot.Spreadsheets.FindCurrentQuestionColID(rowID)
-	if err != nil {
-		return nil, err
-	}
+func (bot *Bot) SaveAnswerAndGetNextMessage(answer string, currentPosition string, userID string) (*linebot.FlexMessage, error) {
+	// questionColID, err := bot.Spreadsheets.FindCurrentQuestionColID(rowID)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	questionColID := spreadsheets.ColumnID([]rune(currentPosition)[0])
+	rowID := string([]rune(currentPosition)[0])
 
 	if questionColID == spreadsheets.QuestionEmail {
 		v := validator.New()
@@ -76,9 +82,9 @@ func (bot *Bot) SaveAnswerAndGetNextMessage(answer string, rowID int, userID str
 		}
 	}
 
-	ranges := getRange(rowID, questionColID)
+	ranges := getRange(currentPosition)
 
-	err = bot.Spreadsheets.SaveValueToSpecificCell(answer, ranges)
+	err := bot.Spreadsheets.SaveValueToSpecificCell(answer, ranges)
 	if err != nil {
 		return nil, err
 	}
@@ -89,12 +95,19 @@ func (bot *Bot) SaveAnswerAndGetNextMessage(answer string, rowID int, userID str
 		if err != nil {
 			return nil, err
 		}
+
+		_, err = bot.Redis.Do("DEL", userID)
+		if err != nil {
+			return nil, err
+		}
+
 		chatroomID := bot.createChatroomAndGetID(userID)
 		flexContainer := getCompleteFormFlexContainer(chatroomID)
 		message := linebot.NewFlexMessage("Final", flexContainer)
 		return message, nil
 	}
 
+	bot.Redis.Do("SET", userID, string(rune(questionColID)+1)+rowID)
 	flexContainer := getQuestionFlexContainer(spreadsheets.ColumnID(rune(questionColID) + 1))
 	message := linebot.NewFlexMessage("Questions", flexContainer)
 	return message, nil

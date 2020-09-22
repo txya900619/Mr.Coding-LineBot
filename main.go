@@ -8,6 +8,7 @@ import (
 	"Mr.Coding-LineBot/config"
 	"Mr.Coding-LineBot/mrcoding"
 	"Mr.Coding-LineBot/spreadsheets"
+	"github.com/gomodule/redigo/redis"
 	"github.com/line/line-bot-sdk-go/linebot"
 )
 
@@ -52,81 +53,81 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 			case *linebot.TextMessage:
 				switch message.Text {
 				case "Mr.Coding 表單":
-					//bot.ReplyMessage(event.ReplyToken, linebot.NewFlexMessage("working", mrcoding.GetWorkingFlexContainer())).Do()
-					//return
-					answerRowID, err := bot.Spreadsheets.FindAnswerRowID(event.Source.UserID)
-					if err != nil {
-						log.Fatal(err)
-					}
-					if answerRowID == 0 {
+					currentPosition, err := redis.String(bot.Redis.Do("GET", event.Source.UserID))
+
+					if err == nil {
+						messageToSend, err = bot.SaveAnswerAndGetNextMessage(message.Text, currentPosition, event.Source.UserID)
+						if err != nil {
+							log.Fatal(err)
+						}
+					} else if err == redis.ErrNil {
 						messageToSend, err = bot.QuestionStart(event.Source.UserID)
 						if err != nil {
 							log.Fatal(err)
 						}
 					} else {
-						messageToSend, err = bot.SaveAnswerAndGetNextMessage(message.Text, answerRowID, event.Source.UserID)
-						if err != nil {
-							log.Fatal(err)
-						}
+						log.Fatal(err)
 					}
+
 				case "社團博覽會有獎徵答":
 					messageToSend = linebot.NewTextMessage("社團博覽會已結束")
 				case "/help":
 					messageToSend = mrcoding.HelpMessage()
 				default:
-					answerRowID, err := bot.Spreadsheets.FindAnswerRowID(event.Source.UserID)
+					currentPosition, err := redis.String(bot.Redis.Do("GET", event.Source.UserID))
 					if err != nil {
 						log.Fatal(err)
 					}
+					if err == nil {
+						messageToSend, err = bot.SaveAnswerAndGetNextMessage(message.Text, currentPosition, event.Source.UserID)
+						if err != nil {
+							log.Fatal(err)
+						}
+					} else if err == redis.ErrNil {
+						messageToSend = linebot.NewTextMessage("點開選單選擇功能，\n或輸入 /help 選擇想使用的功能。")
+					} else {
+						log.Fatal(err)
+					}
+				}
+			case *linebot.ImageMessage:
+				currentPosition, err := redis.String(bot.Redis.Do("GET", event.Source.UserID))
 
-					if answerRowID != 0 {
-						messageToSend, err = bot.SaveAnswerAndGetNextMessage(message.Text, answerRowID, event.Source.UserID)
+				if err == nil {
+					if spreadsheets.ColumnID([]rune(currentPosition)[0]) == spreadsheets.QuestionUploadFile {
+						content, err := bot.GetMessageContent(message.ID).Do()
+						if err != nil {
+							log.Fatal(err)
+						}
+						fileURL, err := bot.Drive.UploadNewFile(content.Content, event.Timestamp.String()+"-"+event.Source.UserID)
+						if err != nil {
+							log.Fatal(err)
+						}
+
+						messageToSend, err = bot.SaveAnswerAndGetNextMessage(fileURL, currentPosition, event.Source.UserID)
 						if err != nil {
 							log.Fatal(err)
 						}
 					} else {
-						messageToSend = linebot.NewTextMessage("點開選單選擇功能，\n或輸入 /help 選擇想使用的功能。")
+						messageToSend = linebot.NewFlexMessage("error", mrcoding.GetTypeErrorFlexContainer())
 					}
-				}
-			case *linebot.ImageMessage:
-				answerRowID, err := bot.Spreadsheets.FindAnswerRowID(event.Source.UserID)
-				if err != nil {
-					log.Fatal(err)
-				}
-				questionColID, err := bot.Spreadsheets.FindCurrentQuestionColID(answerRowID)
-				if err != nil {
-					log.Fatal(err)
-				}
-				if questionColID == spreadsheets.QuestionUploadFile {
-					content, err := bot.GetMessageContent(message.ID).Do()
-					if err != nil {
-						log.Fatal(err)
-					}
-					fileURL, err := bot.Drive.UploadNewFile(content.Content, event.Timestamp.String()+"-"+event.Source.UserID)
-					if err != nil {
-						log.Fatal(err)
-					}
-
-					messageToSend, err = bot.SaveAnswerAndGetNextMessage(fileURL, answerRowID, event.Source.UserID)
-					if err != nil {
-						log.Fatal(err)
-					}
+				} else if err == redis.ErrNil {
+					messageToSend = linebot.NewFlexMessage("error", mrcoding.GetTypeErrorFlexContainer())
 				} else {
-					bot.ReplyMessage(event.ReplyToken, linebot.NewFlexMessage("error", mrcoding.GetTypeErrorFlexContainer())).Do()
+					log.Fatal(err)
 				}
+
 			}
 		case linebot.EventTypePostback:
 			switch event.Postback.Data {
 			case "pass":
-				answerRowID, err := bot.Spreadsheets.FindAnswerRowID(event.Source.UserID)
+				currentPosition, err := redis.String(bot.Redis.Do("GET", event.Source.UserID))
 				if err != nil {
-					log.Fatal(err)
-				}
-				if answerRowID != 0 {
-					messageToSend, err = bot.SaveAnswerAndGetNextMessage("NULL", answerRowID, event.Source.UserID)
+					messageToSend, err = bot.SaveAnswerAndGetNextMessage("NULL", currentPosition, event.Source.UserID)
 					if err != nil {
 						log.Fatal(err)
 					}
+				} else if err != redis.ErrNil {
+					log.Fatal(err)
 				}
 			}
 		}
