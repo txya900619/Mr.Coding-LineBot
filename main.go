@@ -45,6 +45,7 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, event := range events {
+		var messageToSend linebot.SendingMessage
 		switch event.Type {
 		case linebot.EventTypeMessage:
 			switch message := event.Message.(type) {
@@ -58,28 +59,20 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 						log.Fatal(err)
 					}
 					if answerRowID == 0 {
-						message, err := bot.QuestionStart(event.Source.UserID)
+						messageToSend, err = bot.QuestionStart(event.Source.UserID)
 						if err != nil {
 							log.Fatal(err)
 						}
-
-						bot.ReplyMessage(event.ReplyToken, message).Do()
 					} else {
-						message, err := bot.SaveAnswerAndGetNextMessage(message.Text, answerRowID, event.Source.UserID)
+						messageToSend, err = bot.SaveAnswerAndGetNextMessage(message.Text, answerRowID, event.Source.UserID)
 						if err != nil {
 							log.Fatal(err)
 						}
-
-						bot.ReplyMessage(event.ReplyToken, message).Do()
 					}
-					return
 				case "社團博覽會有獎徵答":
-
-					bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("社團博覽會已結束")).Do()
-					return
+					messageToSend = linebot.NewTextMessage("社團博覽會已結束")
 				case "/help":
-					bot.ReplyMessage(event.ReplyToken, mrcoding.HelpMessage()).Do()
-					return
+					messageToSend = mrcoding.HelpMessage()
 				default:
 					answerRowID, err := bot.Spreadsheets.FindAnswerRowID(event.Source.UserID)
 					if err != nil {
@@ -87,16 +80,13 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 					}
 
 					if answerRowID != 0 {
-						message, err := bot.SaveAnswerAndGetNextMessage(message.Text, answerRowID, event.Source.UserID)
+						messageToSend, err = bot.SaveAnswerAndGetNextMessage(message.Text, answerRowID, event.Source.UserID)
 						if err != nil {
 							log.Fatal(err)
 						}
-
-						bot.ReplyMessage(event.ReplyToken, message).Do()
 					} else {
-						bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage("點開選單選擇功能，\n或輸入 /help 選擇想使用的功能。")).Do()
+						messageToSend = linebot.NewTextMessage("點開選單選擇功能，\n或輸入 /help 選擇想使用的功能。")
 					}
-					return
 				}
 			case *linebot.ImageMessage:
 				answerRowID, err := bot.Spreadsheets.FindAnswerRowID(event.Source.UserID)
@@ -117,17 +107,13 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 						log.Fatal(err)
 					}
 
-					message, err := bot.SaveAnswerAndGetNextMessage(fileURL, answerRowID, event.Source.UserID)
+					messageToSend, err = bot.SaveAnswerAndGetNextMessage(fileURL, answerRowID, event.Source.UserID)
 					if err != nil {
 						log.Fatal(err)
 					}
-
-					bot.ReplyMessage(event.ReplyToken, message).Do()
 				} else {
 					bot.ReplyMessage(event.ReplyToken, linebot.NewFlexMessage("error", mrcoding.GetTypeErrorFlexContainer())).Do()
 				}
-				return
-
 			}
 		case linebot.EventTypePostback:
 			switch event.Postback.Data {
@@ -137,15 +123,14 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 					log.Fatal(err)
 				}
 				if answerRowID != 0 {
-					message, err := bot.SaveAnswerAndGetNextMessage("NULL", answerRowID, event.Source.UserID)
+					messageToSend, err = bot.SaveAnswerAndGetNextMessage("NULL", answerRowID, event.Source.UserID)
 					if err != nil {
 						log.Fatal(err)
 					}
-
-					bot.ReplyMessage(event.ReplyToken, message).Do()
-					return
 				}
 			}
 		}
+
+		bot.ReplyMessage(event.ReplyToken, messageToSend).Do()
 	}
 }

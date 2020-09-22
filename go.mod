@@ -6,6 +6,7 @@ require (
 	cloud.google.com/go v0.66.0 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-playground/validator/v10 v10.3.0
+	github.com/gomodule/redigo v1.8.2 // indirect
 	github.com/line/line-bot-sdk-go v7.6.0+incompatible
 	github.com/magiconair/properties v1.8.3 // indirect
 	github.com/mitchellh/mapstructure v1.3.3 // indirect

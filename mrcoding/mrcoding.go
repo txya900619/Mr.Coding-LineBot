@@ -1,17 +1,19 @@
 package mrcoding
 
 import (
-	"Mr.Coding-LineBot/config"
-	"Mr.Coding-LineBot/drive"
-	"Mr.Coding-LineBot/spreadsheets"
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/go-playground/validator/v10"
-	"github.com/line/line-bot-sdk-go/linebot"
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"Mr.Coding-LineBot/config"
+	"Mr.Coding-LineBot/drive"
+	"Mr.Coding-LineBot/spreadsheets"
+	"github.com/go-playground/validator/v10"
+	"github.com/gomodule/redigo/redis"
+	"github.com/line/line-bot-sdk-go/linebot"
 )
 
 type Bot struct {
@@ -19,6 +21,7 @@ type Bot struct {
 	Spreadsheets *spreadsheets.Spreadsheets
 	Drive        *drive.Drive
 	backendToken string
+	redis        *redis.Conn
 }
 
 func New(c *config.Config, options ...linebot.ClientOption) (*Bot, error) {
@@ -34,7 +37,13 @@ func New(c *config.Config, options ...linebot.ClientOption) (*Bot, error) {
 		return nil, err
 	}
 
-	return &Bot{lb, ss, drive, c.CreateChatroomToken}, nil
+	conn, err := redis.DialURL("redis://redis:6379")
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &Bot{lb, ss, drive, c.CreateChatroomToken, &conn}, nil
 }
 
 func (bot *Bot) QuestionStart(userID string) (*linebot.FlexMessage, error) {
