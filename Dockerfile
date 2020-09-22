@@ -1,4 +1,4 @@
-FROM scratch
+FROM alpine:latest
 
 LABEL maintainer = "wayne900619@gmail.com"
 
