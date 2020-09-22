@@ -1,0 +1,36 @@
+name: Publish Docker Image
+
+on: push
+
+jobs:
+  Build-binary:
+    name: build docker image and publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: setup go 1.15.2
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.15.2"
+
+      - name: caching dependency
+        uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: build binary file
+        run: |
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o ./Mr.Coding-LineBot
+
+      - name: publish image to docker hub
+        uses: elgohr/Publish-Docker-Github-Action@2.22
+        with:
+          name: wayne900619/mr.coding-linebot
+          username: wayne900619
+          password: ${{ secrets.docker_password }}
+          dockerfile: Dockerfile
