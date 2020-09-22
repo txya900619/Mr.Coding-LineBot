@@ -14,3 +14,6 @@ services:
       - redis
     ports:
       - "1225:1225"
+    volumes:
+      - ./config.yaml:/config.yaml
+      - ./token.json:/token.json
