@@ -41,6 +41,8 @@ func New(spreadsheetsID string) (*Spreadsheets, error) {
 		return nil, fmt.Errorf("can't read token.json, err: %v", err)
 	}
 
+	fmt.Println(b)
+
 	token, err := google.JWTConfigFromJSON(b, sheets.SpreadsheetsScope)
 	if err != nil {
 		return nil, fmt.Errorf("get config fail, err: %v", err)
