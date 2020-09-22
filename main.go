@@ -121,7 +121,7 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 			switch event.Postback.Data {
 			case "pass":
 				currentPosition, err := redis.String(bot.Redis.Do("GET", event.Source.UserID))
-				if err != nil {
+				if err == nil {
 					messageToSend, err = bot.SaveAnswerAndGetNextMessage("NULL", currentPosition, event.Source.UserID)
 					if err != nil {
 						log.Fatal(err)
