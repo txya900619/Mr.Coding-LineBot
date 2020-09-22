@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go v0.66.0 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-playground/validator/v10 v10.3.0
-	github.com/gomodule/redigo v1.8.2 // indirect
+	github.com/gomodule/redigo v1.8.2
 	github.com/line/line-bot-sdk-go v7.6.0+incompatible
 	github.com/magiconair/properties v1.8.3 // indirect
 	github.com/mitchellh/mapstructure v1.3.3 // indirect
@@ -17,7 +17,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.7.1
 	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
-	golang.org/x/sys v0.0.0-20200918174421-af09f7315aff // indirect
+	golang.org/x/sys v0.0.0-20200922070232-aee5d888a860 // indirect
 	google.golang.org/api v0.32.0
 	google.golang.org/genproto v0.0.0-20200921165018-b9da36f5f452 // indirect
 	google.golang.org/grpc v1.32.0 // indirect
