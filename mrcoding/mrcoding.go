@@ -84,6 +84,8 @@ func (bot *Bot) SaveAnswerAndGetNextMessage(answer string, currentPosition strin
 
 	ranges := getRange(currentPosition)
 
+	fmt.Println(string(rune(questionColID)+1) + rowID)
+
 	err := bot.Spreadsheets.SaveValueToSpecificCell(answer, ranges)
 	if err != nil {
 		return nil, err
