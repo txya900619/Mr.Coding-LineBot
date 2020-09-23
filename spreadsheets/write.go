@@ -6,7 +6,7 @@ import (
 
 func (ss *Spreadsheets) AppendRow(row []interface{}) error {
 
-	_, err := ss.Values.Append(ss.SpreadsheetsID, "表單回應 1", &sheets.ValueRange{Values: [][]interface{}{row}}).Do()
+	_, err := ss.Values.Append(ss.SpreadsheetsID, "表單回應 1", &sheets.ValueRange{Values: [][]interface{}{row}}).ValueInputOption("RAW").Do()
 	if err != nil {
 		return err
 	}
