@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strconv"
 	"time"
 
 	"Mr.Coding-LineBot/config"
@@ -48,16 +47,11 @@ func New(c *config.Config, options ...linebot.ClientOption) (*Bot, error) {
 }
 
 func (bot *Bot) QuestionStart(userID string) (*linebot.FlexMessage, error) {
-	lastRowID, err := bot.Spreadsheets.GetLastRowID()
-	if err != nil {
-		return nil, err
-	}
-
-	lastRowIDStr := strconv.Itoa(lastRowID)
-
+	// save answer to index 0
 	bot.Redis.Do("ZADD", userID+"Data", 0, time.Now().String())
 
-	bot.Redis.Do("SET", userID, string(rune(spreadsheets.QuestionEmail))+lastRowIDStr)
+	// save what question should be answered
+	bot.Redis.Do("SET", userID, string(rune(spreadsheets.QuestionEmail)))
 
 	flexContainer := getQuestionFlexContainer(spreadsheets.QuestionEmail)
 	message := linebot.NewFlexMessage("Questions", flexContainer)
@@ -66,7 +60,6 @@ func (bot *Bot) QuestionStart(userID string) (*linebot.FlexMessage, error) {
 
 func (bot *Bot) SaveAnswerAndGetNextMessage(answer string, currentPosition string, userID string) (*linebot.FlexMessage, error) {
 	questionColID := spreadsheets.ColumnID([]rune(currentPosition)[0])
-	rowID := string([]rune(currentPosition)[1:])
 
 	if questionColID == spreadsheets.QuestionEmail {
 		v := validator.New()
@@ -77,8 +70,6 @@ func (bot *Bot) SaveAnswerAndGetNextMessage(answer string, currentPosition strin
 	}
 
 	bot.Redis.Do("ZADD", userID+"Data", string(rune(questionColID)), answer)
-	fmt.Println(string(rune(questionColID)))
-
 	// If is last question
 	if questionColID == spreadsheets.QuestionNote {
 		_, err := bot.Redis.Do("DEL", userID)
@@ -87,6 +78,12 @@ func (bot *Bot) SaveAnswerAndGetNextMessage(answer string, currentPosition strin
 		}
 		//TODO: save to spreadsheet
 
+		row, err := redis.Values(bot.Redis.Do("ZRANGE", userID+"Data", 0, 7))
+		if err != nil {
+			return nil, err
+		}
+
+		bot.Spreadsheets.AppendRow(row)
 		bot.Redis.Do("DEL", userID+"Data")
 		chatroomID := bot.createChatroomAndGetID(userID)
 		flexContainer := getCompleteFormFlexContainer(chatroomID)
@@ -94,7 +91,7 @@ func (bot *Bot) SaveAnswerAndGetNextMessage(answer string, currentPosition strin
 		return message, nil
 	}
 
-	bot.Redis.Do("SET", userID, string(rune(questionColID)+1)+rowID)
+	bot.Redis.Do("SET", userID, string(rune(questionColID)+1))
 	flexContainer := getQuestionFlexContainer(spreadsheets.ColumnID(rune(questionColID) + 1))
 	message := linebot.NewFlexMessage("Questions", flexContainer)
 	return message, nil
