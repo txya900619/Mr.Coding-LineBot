@@ -69,7 +69,7 @@ func (bot *Bot) SaveAnswerAndGetNextMessage(answer string, currentPosition strin
 		}
 	}
 
-	bot.Redis.Do("ZADD", userID+"Data", string(rune(questionColID)), answer)
+	bot.Redis.Do("ZADD", userID+"Data", rune(questionColID)-'0', answer)
 	// If is last question
 	if questionColID == spreadsheets.QuestionNote {
 		_, err := bot.Redis.Do("DEL", userID)
@@ -83,6 +83,9 @@ func (bot *Bot) SaveAnswerAndGetNextMessage(answer string, currentPosition strin
 			return nil, err
 		}
 		fmt.Println(rowStr)
+		for _, v := range row {
+			fmt.Println(v)
+		}
 
 		err = bot.Spreadsheets.AppendRow(row)
 		if err != nil {
