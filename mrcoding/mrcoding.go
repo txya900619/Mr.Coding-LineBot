@@ -77,11 +77,12 @@ func (bot *Bot) SaveAnswerAndGetNextMessage(answer string, currentPosition strin
 			return nil, err
 		}
 
-		row, err := redis.Values(bot.Redis.Do("ZRANGE", userID+"Data", 0, 7))
+		row, err := redis.MultiBulk(bot.Redis.Do("ZRANGE", userID+"Data", 0, 7))
+		rowStr, err := redis.Strings(bot.Redis.Do("ZRANGE", userID+"Data", 0, 7))
 		if err != nil {
 			return nil, err
 		}
-		fmt.Println(row)
+		fmt.Println(rowStr)
 
 		err = bot.Spreadsheets.AppendRow(row)
 		if err != nil {
