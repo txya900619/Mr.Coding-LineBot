@@ -48,7 +48,7 @@ func New(c *config.Config, options ...linebot.ClientOption) (*Bot, error) {
 
 func (bot *Bot) QuestionStart(userID string) (*linebot.FlexMessage, error) {
 	// save answer to index 0
-	bot.Redis.Do("ZADD", userID+"Data", 0, time.Now().String())
+	bot.Redis.Do("LPUSH", userID+"Data", time.Now().String())
 
 	// save what question should be answered
 	bot.Redis.Do("SET", userID, string(rune(spreadsheets.QuestionEmail)))
@@ -69,7 +69,7 @@ func (bot *Bot) SaveAnswerAndGetNextMessage(answer string, currentPosition strin
 		}
 	}
 
-	bot.Redis.Do("ZADD", userID+"Data", rune(questionColID)-'0', answer)
+	bot.Redis.Do("LPUSH", userID+"Data", answer)
 	// If is last question
 	if questionColID == spreadsheets.QuestionNote {
 		_, err := bot.Redis.Do("DEL", userID)
@@ -77,15 +77,11 @@ func (bot *Bot) SaveAnswerAndGetNextMessage(answer string, currentPosition strin
 			return nil, err
 		}
 
-		row, err := redis.MultiBulk(bot.Redis.Do("ZRANGE", userID+"Data", 0, 7))
-		rowStr, err := redis.Strings(bot.Redis.Do("ZRANGE", userID+"Data", 0, 7))
+		row, err := redis.Strings(bot.Redis.Do("LRANGE", userID+"Data", 0, 7))
 		if err != nil {
 			return nil, err
 		}
-		fmt.Println(rowStr)
-		for _, v := range row {
-			fmt.Println(v)
-		}
+		fmt.Println(row)
 
 		err = bot.Spreadsheets.AppendRow(row)
 		if err != nil {
