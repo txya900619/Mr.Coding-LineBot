@@ -13,7 +13,7 @@ import (
 type ColumnID rune
 
 const (
-	TimeStamp ColumnID = iota + 'A'
+	TimeStamp ColumnID = iota + '0'
 	QuestionEmail
 	QuestionName
 	QuestionStudentNo

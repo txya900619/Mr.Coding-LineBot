@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"Mr.Coding-LineBot/config"
 	"Mr.Coding-LineBot/drive"
@@ -38,13 +39,12 @@ func New(c *config.Config, options ...linebot.ClientOption) (*Bot, error) {
 		return nil, err
 	}
 
-	conn, err := redis.DialURL("redis://redis:6379")
-
+	redis, err := redis.DialURL("redis://redis:6379")
 	if err != nil {
 		return nil, err
 	}
 
-	return &Bot{lb, ss, drive, c.CreateChatroomToken, conn}, nil
+	return &Bot{lb, ss, drive, c.CreateChatroomToken, redis}, nil
 }
 
 func (bot *Bot) QuestionStart(userID string) (*linebot.FlexMessage, error) {
@@ -53,12 +53,11 @@ func (bot *Bot) QuestionStart(userID string) (*linebot.FlexMessage, error) {
 		return nil, err
 	}
 
-	err = bot.Spreadsheets.InsertTimestampAndUserID(userID, lastRowID)
-	if err != nil {
-		return nil, err
-	}
+	lastRowIDStr := strconv.Itoa(lastRowID)
 
-	bot.Redis.Do("SET", userID, "B"+strconv.Itoa(lastRowID))
+	bot.Redis.Do("ZADD", userID+"Data", 0, time.Now().String())
+
+	bot.Redis.Do("SET", userID, string(rune(spreadsheets.QuestionEmail))+lastRowIDStr)
 
 	flexContainer := getQuestionFlexContainer(spreadsheets.QuestionEmail)
 	message := linebot.NewFlexMessage("Questions", flexContainer)
@@ -66,11 +65,6 @@ func (bot *Bot) QuestionStart(userID string) (*linebot.FlexMessage, error) {
 }
 
 func (bot *Bot) SaveAnswerAndGetNextMessage(answer string, currentPosition string, userID string) (*linebot.FlexMessage, error) {
-	// questionColID, err := bot.Spreadsheets.FindCurrentQuestionColID(rowID)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
 	questionColID := spreadsheets.ColumnID([]rune(currentPosition)[0])
 	rowID := string([]rune(currentPosition)[1:])
 
@@ -82,27 +76,18 @@ func (bot *Bot) SaveAnswerAndGetNextMessage(answer string, currentPosition strin
 		}
 	}
 
-	ranges := getRange(currentPosition)
-
-	fmt.Println(string(rune(questionColID)+1) + rowID)
-
-	err := bot.Spreadsheets.SaveValueToSpecificCell(answer, ranges)
-	if err != nil {
-		return nil, err
-	}
+	bot.Redis.Do("ZADD", userID+"Data", string(rune(questionColID)), answer)
+	fmt.Println(string(rune(questionColID)))
 
 	// If is last question
 	if questionColID == spreadsheets.QuestionNote {
-		err = bot.Spreadsheets.DeleteUserID(rowID)
+		_, err := bot.Redis.Do("DEL", userID)
 		if err != nil {
 			return nil, err
 		}
+		//TODO: save to spreadsheet
 
-		_, err = bot.Redis.Do("DEL", userID)
-		if err != nil {
-			return nil, err
-		}
-
+		bot.Redis.Do("DEL", userID+"Data")
 		chatroomID := bot.createChatroomAndGetID(userID)
 		flexContainer := getCompleteFormFlexContainer(chatroomID)
 		message := linebot.NewFlexMessage("Final", flexContainer)
