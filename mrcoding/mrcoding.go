@@ -83,7 +83,11 @@ func (bot *Bot) SaveAnswerAndGetNextMessage(answer string, currentPosition strin
 			return nil, err
 		}
 
-		bot.Spreadsheets.AppendRow(row)
+		err = bot.Spreadsheets.AppendRow(row)
+		if err != nil {
+			return nil, err
+		}
+
 		bot.Redis.Do("DEL", userID+"Data")
 		chatroomID := bot.createChatroomAndGetID(userID)
 		flexContainer := getCompleteFormFlexContainer(chatroomID)
