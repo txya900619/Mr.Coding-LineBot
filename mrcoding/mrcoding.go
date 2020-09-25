@@ -3,7 +3,6 @@ package mrcoding
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -81,8 +80,6 @@ func (bot *Bot) SaveAnswerAndGetNextMessage(answer string, currentPosition strin
 		if err != nil {
 			return nil, err
 		}
-		fmt.Println(row)
-
 		err = bot.Spreadsheets.AppendRow(row)
 		if err != nil {
 			return nil, err
@@ -103,7 +100,6 @@ func (bot *Bot) SaveAnswerAndGetNextMessage(answer string, currentPosition strin
 
 func (bot *Bot) createChatroomAndGetID(userID string) string {
 	client := &http.Client{}
-	fmt.Println(userID)
 	reqBody := map[string]string{"lineChatroomUserID": userID}
 	jsonReqBody, _ := json.Marshal(reqBody)
 	req, err := http.NewRequest(http.MethodPost, "https://mrcoding.org/api/chatrooms", bytes.NewBuffer(jsonReqBody))

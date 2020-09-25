@@ -75,9 +75,6 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 					messageToSend = mrcoding.HelpMessage()
 				default:
 					currentPosition, err := redis.String(bot.Redis.Do("GET", event.Source.UserID))
-					if err != nil {
-						log.Fatal(err)
-					}
 					if err == nil {
 						messageToSend, err = bot.SaveAnswerAndGetNextMessage(message.Text, currentPosition, event.Source.UserID)
 						if err != nil {
