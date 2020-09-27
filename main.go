@@ -52,7 +52,7 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 			switch message := event.Message.(type) {
 			case *linebot.TextMessage:
 				switch message.Text {
-				case "Mr.Coding 表單":
+				case "星爆氣流斬":
 					currentPosition, err := redis.String(bot.Redis.Do("GET", event.Source.UserID))
 
 					if err == nil {
@@ -69,6 +69,8 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 						log.Fatal(err)
 					}
 
+				case "Mr.Coding 表單":
+					messageToSend = linebot.NewTextMessage("預計 10 月開放使用，目前竭力開發中～")
 				case "社團博覽會有獎徵答":
 					messageToSend = linebot.NewTextMessage("社團博覽會已結束")
 				case "/help":
