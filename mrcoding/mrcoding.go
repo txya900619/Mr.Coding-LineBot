@@ -57,7 +57,7 @@ func (bot *Bot) QuestionStart(userID string) (*linebot.FlexMessage, error) {
 	return message, nil
 }
 
-func (bot *Bot) SaveAnswerAndGetNextMessage(answer string, currentPosition string, userID string) (*linebot.FlexMessage, error) {
+func (bot *Bot) SaveAnswerAndGetNextMessage(answer, currentPosition, userID string) (*linebot.FlexMessage, error) {
 	questionColID := spreadsheets.ColumnID([]rune(currentPosition)[0])
 
 	if questionColID == spreadsheets.QuestionEmail {
@@ -80,13 +80,19 @@ func (bot *Bot) SaveAnswerAndGetNextMessage(answer string, currentPosition strin
 		if err != nil {
 			return nil, err
 		}
+
 		err = bot.Spreadsheets.AppendRow(row)
 		if err != nil {
 			return nil, err
 		}
 
+		name, err := redis.String(bot.Redis.Do("LINDEX", userID+"Data", 2))
+		if err != nil {
+			return nil, err
+		}
+
 		bot.Redis.Do("DEL", userID+"Data")
-		chatroomID := bot.createChatroomAndGetID(userID)
+		chatroomID := bot.createChatroomAndGetID(userID, name+"的詢問聊天室")
 		flexContainer := getCompleteFormFlexContainer(chatroomID)
 		message := linebot.NewFlexMessage("Final", flexContainer)
 		return message, nil
@@ -98,9 +104,9 @@ func (bot *Bot) SaveAnswerAndGetNextMessage(answer string, currentPosition strin
 	return message, nil
 }
 
-func (bot *Bot) createChatroomAndGetID(userID string) string {
+func (bot *Bot) createChatroomAndGetID(userID, name string) string {
 	client := &http.Client{}
-	reqBody := map[string]string{"lineChatroomUserID": userID}
+	reqBody := map[string]string{"lineChatroomUserID": userID, "name": name}
 	jsonReqBody, _ := json.Marshal(reqBody)
 	req, err := http.NewRequest(http.MethodPost, "https://mrcoding.org/api/chatrooms", bytes.NewBuffer(jsonReqBody))
 	if err != nil {
@@ -131,6 +137,5 @@ func (bot *Bot) createChatroomAndGetID(userID string) string {
 	if err != nil {
 		log.Fatalf("jsonUnmarshal, err: %v", err)
 	}
-
 	return result["_id"].(string)
 }
