@@ -3,17 +3,20 @@ package drive
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
+
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
-	"io/ioutil"
 )
 
+//Drive is struct that contain origin driver client add FolderID
 type Drive struct {
 	*drive.Service
 	FolderID string
 }
 
+//New will read token from token.json and create new Drive instance
 func New(folderID string) (*Drive, error) {
 	b, err := ioutil.ReadFile("token.json")
 

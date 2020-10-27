@@ -5,8 +5,9 @@ import (
 	"github.com/line/line-bot-sdk-go/linebot"
 )
 
-func getCompleteFormFlexContainer(chatroomID string) linebot.FlexContainer {
-	return &linebot.BubbleContainer{
+//Last message, send when user answered all question
+func completeFormMessage(chatroomID string) *linebot.FlexMessage {
+	container := &linebot.BubbleContainer{
 		Type: linebot.FlexContainerTypeBubble,
 		Size: linebot.FlexBubbleSizeTypeKilo,
 		Header: &linebot.BoxComponent{
@@ -54,9 +55,12 @@ func getCompleteFormFlexContainer(chatroomID string) linebot.FlexContainer {
 			Footer: &linebot.BlockStyle{Separator: true},
 		},
 	}
+
+	return linebot.NewFlexMessage("Complete form!", container)
 }
 
-func getQuestionFlexContainer(questionID spreadsheets.ColumnID) linebot.FlexContainer {
+//Common question message
+func questionMessage(questionID spreadsheets.ColumnID) *linebot.FlexMessage {
 	text := ""
 	instructions := ""
 	footerPassBtn := false
@@ -132,11 +136,12 @@ func getQuestionFlexContainer(questionID spreadsheets.ColumnID) linebot.FlexCont
 			Footer: &linebot.BlockStyle{Separator: true},
 		}
 	}
-	return container
+	return linebot.NewFlexMessage("Questions", container)
 }
 
-func getEmailErrorFlexContainer() linebot.FlexContainer {
-	return &linebot.BubbleContainer{
+//Send when email validate fail
+func emailErrorMessage() *linebot.FlexMessage {
+	container := &linebot.BubbleContainer{
 		Type: linebot.FlexContainerTypeBubble,
 		Body: &linebot.BoxComponent{
 			Type:   linebot.FlexComponentTypeBox,
@@ -149,9 +154,12 @@ func getEmailErrorFlexContainer() linebot.FlexContainer {
 			},
 		},
 	}
+
+	return linebot.NewFlexMessage("Email format incorrect!", container)
 }
 
-func HelpMessage() *linebot.FlexMessage {
+//Send when user input /help
+func helpMessage() *linebot.FlexMessage {
 	flexContainer := &linebot.BubbleContainer{
 		Type: linebot.FlexContainerTypeBubble,
 		Body: &linebot.BoxComponent{
@@ -179,8 +187,9 @@ func HelpMessage() *linebot.FlexMessage {
 	return linebot.NewFlexMessage("help", flexContainer)
 }
 
-func GetTypeErrorFlexContainer() linebot.FlexContainer {
-	return &linebot.BubbleContainer{
+//Send when user not input text or img (in correct time)
+func typeErrorMessage() *linebot.FlexMessage {
+	container := &linebot.BubbleContainer{
 		Type: linebot.FlexContainerTypeBubble,
 		Body: &linebot.BoxComponent{
 			Type:   linebot.FlexComponentTypeBox,
@@ -193,10 +202,13 @@ func GetTypeErrorFlexContainer() linebot.FlexContainer {
 			},
 		},
 	}
+
+	return linebot.NewFlexMessage("Error message!", container)
 }
 
-func GetWorkingFlexContainer() linebot.FlexContainer {
-	return &linebot.BubbleContainer{
+//Working working
+func workingMessage() *linebot.FlexMessage {
+	container := &linebot.BubbleContainer{
 		Type: linebot.FlexContainerTypeBubble,
 		Body: &linebot.BoxComponent{
 			Type:   linebot.FlexComponentTypeBox,
@@ -209,4 +221,5 @@ func GetWorkingFlexContainer() linebot.FlexContainer {
 			},
 		},
 	}
+	return linebot.NewFlexMessage("working~", container)
 }
