@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"Mr.Coding-LineBot/mrcoding/messages"
 	"Mr.Coding-LineBot/spreadsheets"
 	"github.com/gomodule/redigo/redis"
 	"github.com/line/line-bot-sdk-go/linebot"
@@ -33,13 +34,13 @@ func Handler(bot *Bot) func(http.ResponseWriter, *http.Request) {
 					case "Mr.Coding 表單":
 						messageToSend = linebot.NewTextMessage("預計 11 月開放使用，目前竭力開發中～")
 					case "/help":
-						messageToSend = helpMessage()
+						messageToSend = messages.HelpMessage()
 
 					case "星爆氣流斬":
 						currentPosition, err := redis.String(bot.Redis.Do("GET", event.Source.UserID))
 						if err != nil {
 							if err == redis.ErrNil {
-								messageToSend, err = bot.questionStart(event.Source.UserID)
+								messageToSend, err = bot.initQuestions(event.Source.UserID)
 								if err != nil {
 									log.Fatal(err)
 								}
@@ -49,7 +50,7 @@ func Handler(bot *Bot) func(http.ResponseWriter, *http.Request) {
 							}
 						}
 
-						messageToSend, err = bot.saveAndNext(currentPosition, message.Text, event.Source.UserID)
+						messageToSend, err = bot.saveAnswerAndGetNextQuestion(currentPosition, message.Text, event.Source.UserID)
 						if err != nil {
 							log.Fatal(err)
 						}
@@ -64,7 +65,7 @@ func Handler(bot *Bot) func(http.ResponseWriter, *http.Request) {
 							}
 						}
 
-						messageToSend, err = bot.saveAndNext(currentPosition, message.Text, event.Source.UserID)
+						messageToSend, err = bot.saveAnswerAndGetNextQuestion(currentPosition, message.Text, event.Source.UserID)
 						if err != nil {
 							log.Fatal(err)
 						}
@@ -75,7 +76,7 @@ func Handler(bot *Bot) func(http.ResponseWriter, *http.Request) {
 
 					if err != nil {
 						if err == redis.ErrNil {
-							messageToSend = typeErrorMessage()
+							messageToSend = messages.TypeErrorMessage()
 						} else {
 							log.Fatalf("get current position fail, err: %v", err)
 						}
@@ -91,12 +92,12 @@ func Handler(bot *Bot) func(http.ResponseWriter, *http.Request) {
 							log.Fatal(err)
 						}
 
-						messageToSend, err = bot.saveAndNext(currentPosition, fileURL, event.Source.UserID)
+						messageToSend, err = bot.saveAnswerAndGetNextQuestion(currentPosition, fileURL, event.Source.UserID)
 						if err != nil {
 							log.Fatal(err)
 						}
 					} else {
-						messageToSend = typeErrorMessage()
+						messageToSend = messages.TypeErrorMessage()
 					}
 
 				}
@@ -110,7 +111,7 @@ func Handler(bot *Bot) func(http.ResponseWriter, *http.Request) {
 						}
 					}
 
-					messageToSend, err = bot.saveAndNext(currentPosition, "NULL", event.Source.UserID)
+					messageToSend, err = bot.saveAnswerAndGetNextQuestion(currentPosition, "NULL", event.Source.UserID)
 					if err != nil {
 						log.Fatal(err)
 					}

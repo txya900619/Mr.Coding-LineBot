@@ -8,6 +8,7 @@ import (
 
 	"Mr.Coding-LineBot/config"
 	"Mr.Coding-LineBot/drive"
+	"Mr.Coding-LineBot/mrcoding/messages"
 	"Mr.Coding-LineBot/spreadsheets"
 	"github.com/go-playground/validator/v10"
 	"github.com/gomodule/redigo/redis"
@@ -62,7 +63,7 @@ func New(c *config.Config, options ...linebot.ClientOption) (*Bot, error) {
 }
 
 //Initail questions by save some user data
-func (bot *Bot) questionStart(userID string) (*linebot.FlexMessage, error) {
+func (bot *Bot) initQuestions(userID string) (*linebot.FlexMessage, error) {
 	// save answer to index 0
 	bot.Redis.Do("RPUSH", userID+"Data", time.Now().String())
 
@@ -70,9 +71,66 @@ func (bot *Bot) questionStart(userID string) (*linebot.FlexMessage, error) {
 	bot.Redis.Do("SET", userID, string(rune(spreadsheets.QuestionEmail)))
 
 	//get first question message (email)
-	message := questionMessage(spreadsheets.QuestionEmail)
+	message := messages.QuestionMessage(spreadsheets.QuestionEmail)
 
 	return message, nil
+}
+
+//endQuestions is an function to do some thing that need to do after last answer save to redis
+//like send answers to spreadsheets and backend or delete answers in redis
+func (bot *Bot) endQuestions(userID string) string {
+	//get answers from redis list
+	row, err := redis.Strings(bot.Redis.Do("LRANGE", userID+"Data", 0, 7))
+	if err != nil {
+		log.Fatalf("redis LRANGE answers fail, err: %v", err)
+	}
+
+	//append answers to spreadsheets
+	err = bot.Spreadsheets.AppendRow(row)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	//delete answers in redis list
+	deleteUserAnswer(userID, bot.Redis)
+
+	//send request to backend and return message that have chatroom's URL
+	return bot.createChatroomAndGetID(userID, row[2]+"的詢問聊天室")
+}
+
+//Save answer and get next question
+func (bot *Bot) saveAnswerAndGetNextQuestion(currentPosition, answer, userID string) (*linebot.FlexMessage, error) {
+	//transform currentPostion(string) to ColumnID
+	questionColID := spreadsheets.ColumnID([]rune(currentPosition)[0])
+
+	//save the answer to current question
+	err := saveAnswer(answer, userID, questionColID, bot.Redis)
+	if err != nil {
+		//if email validate fail then return email error message to re-question
+		if err == ErrEmailValidateFail {
+			return messages.EmailErrorMessage(), nil
+
+		}
+		return nil, err
+	}
+
+	//if current question is last question
+	if questionColID == spreadsheets.QuestionNote {
+		//do something need to do in last
+		chatroomID := bot.endQuestions(userID)
+
+		return messages.CompleteFormMessage(chatroomID), nil
+	}
+
+	//update currentPostion
+	_, err = bot.Redis.Do("SET", userID, string(rune(questionColID)+1))
+	if err != nil {
+		return nil, fmt.Errorf("redis SET current position to next fail, err: %v", err)
+	}
+
+	// return next question
+	return messages.QuestionMessage(spreadsheets.ColumnID(rune(questionColID) + 1)), nil
+
 }
 
 //Save answer to redis
@@ -111,61 +169,4 @@ func deleteUserAnswer(userID string, conn redis.Conn) error {
 	}
 
 	return nil
-}
-
-//final is an function to do some thing that need to do after last answer save to redis
-//like send answers to spreadsheets and backend or delete answers in redis
-func (bot *Bot) final(userID string) string {
-	//get answers from redis list
-	row, err := redis.Strings(bot.Redis.Do("LRANGE", userID+"Data", 0, 7))
-	if err != nil {
-		log.Fatalf("redis LRANGE answers fail, err: %v", err)
-	}
-
-	//append answers to spreadsheets
-	err = bot.Spreadsheets.AppendRow(row)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	//delete answers in redis list
-	deleteUserAnswer(userID, bot.Redis)
-
-	//send request to backend and return message that have chatroom's URL
-	return bot.createChatroomAndGetID(userID, row[2]+"的詢問聊天室")
-}
-
-//Save answer and get next question
-func (bot *Bot) saveAndNext(currentPosition, answer, userID string) (*linebot.FlexMessage, error) {
-	//transform currentPostion(string) to ColumnID
-	questionColID := spreadsheets.ColumnID([]rune(currentPosition)[0])
-
-	//save the answer to current question
-	err := saveAnswer(answer, userID, questionColID, bot.Redis)
-	if err != nil {
-		//if email validate fail then return email error message to re-question
-		if err == ErrEmailValidateFail {
-			return emailErrorMessage(), nil
-
-		}
-		return nil, err
-	}
-
-	//if current question is last question
-	if questionColID == spreadsheets.QuestionNote {
-		//do something need to do in last
-		chatroomID := bot.final(userID)
-
-		return completeFormMessage(chatroomID), nil
-	}
-
-	//update currentPostion
-	_, err = bot.Redis.Do("SET", userID, string(rune(questionColID)+1))
-	if err != nil {
-		return nil, fmt.Errorf("redis SET current position to next fail, err: %v", err)
-	}
-
-	// return next question
-	return questionMessage(spreadsheets.ColumnID(rune(questionColID) + 1)), nil
-
 }
