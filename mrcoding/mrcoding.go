@@ -95,7 +95,7 @@ func (bot *Bot) endQuestions(userID string) string {
 	deleteUserAnswer(userID, bot.Redis)
 
 	//send request to backend and return message that have chatroom's URL
-	return bot.createChatroomAndGetID(userID, row[2]+"的詢問聊天室")
+	return bot.createChatroomAndGetID(userID, row[2]+"的聊天室")
 }
 
 //Save answer and get next question
