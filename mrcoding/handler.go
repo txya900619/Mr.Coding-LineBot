@@ -30,13 +30,10 @@ func Handler(bot *Bot) func(http.ResponseWriter, *http.Request) {
 				switch message := event.Message.(type) {
 				case *linebot.TextMessage:
 					switch message.Text {
-
-					case "Mr.Coding 表單":
-						messageToSend = linebot.NewTextMessage("預計 11 月開放使用，目前竭力開發中～")
 					case "/help":
 						messageToSend = messages.HelpMessage()
 
-					case "星爆氣流斬":
+					case "Mr.Coding 表單":
 						currentPosition, err := redis.String(bot.Redis.Do("GET", event.Source.UserID))
 						if err != nil {
 							if err == redis.ErrNil {
